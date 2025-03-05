@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/Homepage.css";
+import RelatedProducts from "./RelatedProduct";
 
 export default function HomePage() {
   return (
@@ -31,7 +32,7 @@ export default function HomePage() {
 
       {/* Call to Action */}
       <div className="cta">Limited Offer! Get 20% off on your first order!</div>
-
+      <RelatedProducts />
       {/* Footer */}
       <div className="footer">&copy; 2025 My E-Commerce. All Rights Reserved.</div>
     </div>
