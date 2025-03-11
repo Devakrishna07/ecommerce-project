@@ -12,7 +12,7 @@ def encode_image_to_base64(image_path):
 
 
 # Your Base64 encoded image string
-base64_string = encode_image_to_base64("hoodie.png")
+base64_string = encode_image_to_base64("hoodie.jpg")
 
 # Construct the JSON payload in the required format
 inner_json = json.dumps({"image_data": base64_string})  # Inner JSON as string
