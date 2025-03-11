@@ -1,1 +1,1 @@
-*** Server Side Scripts for API ***
+** Server Side Scripts for API **
