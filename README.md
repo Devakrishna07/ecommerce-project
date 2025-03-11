@@ -40,11 +40,11 @@ cd ecommerce-project
 
 ### **2️⃣ Setup Backend (Django)**
 ```sh
-cd backend
 python -m venv venv  # Create virtual environment
 source venv/bin/activate  # On Mac/Linux
 venv\Scripts\activate  # On Windows
 pip install -r requirements.txt  # Install dependencies
+cd backend
 python manage.py migrate  # Apply migrations
 python manage.py runserver  # Start Django server
 ```
