@@ -37,11 +37,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api',
+    'product',
+    'user',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
 ]
+
+SITE_ID = 1
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -52,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -103,6 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'user.CustomUser'
+
 
 
 # Internationalization

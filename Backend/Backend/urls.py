@@ -18,7 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/", include("api.urls")),  # Include API URLs
+    path("admin/", admin.site.urls),  # Include API URLs
+    path("user/",include('user.urls')),
+     path("product/",include('product.urls')), #Include URLs from the 'user' app
 ]
 
