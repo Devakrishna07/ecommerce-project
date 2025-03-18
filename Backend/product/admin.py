@@ -1,39 +1,32 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Product, ProductImage
-
-class ProductImageInline(admin.TabularInline):  # Inline model for multiple images
-    model = ProductImage
-    extra = 2  # Default 2 image fields when adding a product
+from .models import Product
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('product_name', 'company_name', 'product_type', 'price', 'color', 'display_image', 'created_at')
-    list_filter = ('company_name', 'product_type', 'color')  # Sidebar filtering
-    search_fields = ('product_name', 'company_name', 'description')  # Search functionality
-    inlines = [ProductImageInline]  # Allows multiple images in the product form
-    ordering = ['-created_at']  # Show latest products first
+    list_display = ('id', 'product_name', 'product_type', 'product_price', 'product_company', 'product_count', 'product_image_preview')
+    search_fields = ('product_name', 'product_type', 'product_company', 'product_description')
+    list_filter = ('product_type', 'product_company', 'product_color')
+    ordering = ('-id',)
+    readonly_fields = ('id', 'product_image_preview')  # Ensure this is included correctly
+    list_per_page = 20
+
     fieldsets = (
         ("Product Details", {
-            "fields": ("product_name", "company_name", "product_type", "price", "color", "description")
+            "fields": ("product_name", "product_type", "product_price", "product_company", "product_description")
+        }),
+        ("Specifications", {
+            "fields": ("product_color", "product_size", "product_material", "product_count")
         }),
         ("Images", {
-            "fields": ("display_image",),
-            "classes": ("collapse",),  # Collapsible section for images
+            "fields": ("product_image",)  # Change 'product_images' to 'product_image'
         }),
     )
 
-    def display_image(self, obj):
-        
-        """Display the first image of the product in the admin panel."""
-        first_image = obj.images.first()
-        if first_image:
-            return format_html('<img src="{}" width="50" height="50" style="object-fit:cover;"/>', first_image.image.url)
+    def product_image_preview(self, obj):
+        """Show image preview in the admin panel"""
+        if obj.product_image:
+            return format_html('<img src="{}" width="100" height="100" />', obj.product_image.url)
         return "No Image"
 
-    display_image.allow_tags = True
-    display_image.short_description = "Preview"
-
-@admin.register(ProductImage)
-class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ('product', 'image')  # Displays product name and image
+    product_image_preview.short_description = "Preview"

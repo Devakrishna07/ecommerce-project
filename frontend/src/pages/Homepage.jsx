@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";;
 import "../styles/Homepage.css";
 import RelatedProducts from "./RelatedProduct";
 
-export default function HomePage() {
+export default function HomePage() { 
+
   return (
     <div className="homepage-container">
       {/* Banner */}

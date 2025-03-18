@@ -1,9 +1,8 @@
 from django.urls import path
-from .views import search_products, product_detail, top_carousel_products, top_products
+from .views import top_four_product_images, search_or_latest_products, product_detail
 
 urlpatterns = [
-    path('api/search/', search_products, name='search_products'),
-    path('api/product/<int:product_id>/', product_detail, name='product_detail'),
-    path('api/top-carousel/', top_carousel_products, name='top_carousel_products'),
-    path('api/top-products/', top_products, name='top_products'),
+    path('top/', top_four_product_images, name='top-four-products'),
+    path('search/', search_or_latest_products, name='search-or-latest'),
+    path('detail/<int:product_id>/', product_detail, name='product-detail'),
 ]

@@ -1,49 +1,79 @@
 from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.db.models import Q
+from .models import Product
+from .serializers import ProductSerializer
 
-# Create your views here.
+@api_view(['GET'])
+def top_four_product_images(request):
+    """
+    Get the first image of the top 4 products where product_count > 1.
+    """
+    products = Product.objects.filter(product_count__gt=1).order_by('-id')[:4]
+    serialized_products = ProductSerializer(products, many=True).data
+
+    # Extract only the first image from product_images
+    product_images = [
+        {
+            "product_name": product["product_name"],
+            "first_image": product["product_images"][0] if product["product_images"] else None
+        }
+        for product in serialized_products
+    ]
+
+    return Response(product_images)
+
+@api_view(['GET'])
+def search_or_latest_products(request):
+    """
+    Search products by name, type, company, or description.
+    If no search is made, return the first image of the last 5 products.
+    """
+    search_query = request.GET.get('q', None)
+
+    if search_query:
+        # Filter products if a search query is provided
+        products = Product.objects.filter(
+            Q(product_name__icontains=search_query) |
+            Q(product_type__icontains=search_query) |
+            Q(product_company__icontains=search_query) |
+            Q(product_description__icontains=search_query)
+        )
+    else:
+        # Fetch the last 5 products if no search is made
+        products = Product.objects.order_by('-id')[:5]
+
+    serialized_products = ProductSerializer(products, many=True).data
+
+    # Extract only the first image
+    product_images = [
+        {
+            "product_name": product["product_name"],
+            "first_image": product["product_images"][0] if product["product_images"] else None
+        }
+        for product in serialized_products
+    ]
+
+    return Response(product_images)
+
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Product
 from .serializers import ProductSerializer
-from django.db.models import Q
-from difflib import get_close_matches
 
-# 1️⃣ API to get products similar to search query (handles spelling mistakes)
-@api_view(['GET'])
-def search_products(request):
-    query = request.GET.get('q', '')  # Get query from URL params
-    products = Product.objects.all()
-
-    if query:
-        product_names = list(products.values_list('product_name', flat=True))  # Get all product names
-        close_matches = get_close_matches(query, product_names, n=5, cutoff=0.5)  # Find similar names
-
-        # Filter products matching similar names
-        products = products.filter(Q(product_name__in=close_matches) | Q(product_name__icontains=query))
-
-    serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
-
-# 2️⃣ API to get details of a single product
 @api_view(['GET'])
 def product_detail(request, product_id):
-    try:
-        product = Product.objects.get(id=product_id)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
-    except Product.DoesNotExist:
-        return Response({'error': 'Product not found'}, status=404)
+    """
+    Fetches product details from the database and returns them in JSON format.
+    If `product_count < 1`, returns a "Product not available" message.
+    """
+    product = get_object_or_404(Product, id=product_id)
 
-# 3️⃣ API to get the top 3 products for the carousel (based on latest added)
-@api_view(['GET'])
-def top_carousel_products(request):
-    products = Product.objects.order_by('-created_at')[:3]  # Get latest 3 products
-    serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
+    if product.product_count < 1:
+        return Response({"message": "Product not available"}, status=404)
 
-# 4️⃣ API to get top 4 products for the product page
-@api_view(['GET'])
-def top_products(request):
-    products = Product.objects.order_by('-created_at')[:4]  # Get latest 4 products
-    serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
+    # Serialize the product details
+    serialized_product = ProductSerializer(product).data
+    return Response(serialized_product)
