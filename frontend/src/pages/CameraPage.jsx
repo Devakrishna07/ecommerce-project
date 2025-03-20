@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 // Add this function to your CameraApp component
+
 
 const apicall = () => {
   
@@ -64,19 +67,23 @@ const CameraApp = () => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Initialize camera when component mounts and camera is open
     hideNavbar();
+    
     if (isCameraOpen) {
       openCamera();
+    } else {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
     }
-    
-    // Cleanup function to stop camera when component unmounts
+  
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
   }, [isCameraOpen]);
+  
 
   const openCamera = async () => {
     try {
@@ -95,23 +102,24 @@ const CameraApp = () => {
     }
   };
 
+  const navigate = useNavigate();
+  
   const closeCamera = () => {
     if (stream) {
-      stream.getTracks().forEach(track => {
-        track.stop(); // Stop each track completely
-      });
-  
-      setStream(null); // Clear stream state
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
     }
   
-    if (videoRef.current) {
-      videoRef.current.srcObject = null; // Remove video source
-    }
+    setIsCameraOpen(false);
   
-    setIsCameraOpen(false); // Close camera UI
-  
-    // navigate("/"); // Navigate back to homepage
+    // Use window.location.href if navigate('/') is not working
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 100);
   };
+  
+
+  
 
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
@@ -295,7 +303,7 @@ const CameraApp = () => {
     <div style={styles.app}>
       {isCameraOpen ? (
         <div style={styles.camera}>
-          <button style={styles.closeButton} onClick={closeCamera}>
+          <button style={styles.closeButton} onClick={() => closeCamera()}>
             <CloseIcon />
           </button>
           <video
