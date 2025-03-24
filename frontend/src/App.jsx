@@ -7,6 +7,9 @@ import Footer from './components/footer'
 import CartPage from './pages/cart'
 import PaymentPage from './pages/payment'
 import Payment from './pages/payment'
+import { LogIn } from 'lucide-react'
+import LoginAndSignup from "./pages/LoginAndSignup"
+
 
 const App = () => {
   return (
@@ -19,6 +22,7 @@ const App = () => {
         <Route path='/relatedproduct' element={<RelatedProducts />} />
         <Route path='/cart' element={<CartPage />} />
         <Route path='/payment' element={<Payment/>} />
+        <Route path='/login' element={<LoginAndSignup/>} />
         
     </Routes>
 

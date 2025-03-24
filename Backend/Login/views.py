@@ -34,28 +34,45 @@ class LoginAPIView(APIView):
         else:
             return Response({"message": "Incorrect password. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class RegisterAPIView(APIView):
     def post(self, request):
         email = request.data.get('email')
         username = request.data.get('username')
-        phone_number = request.data.get('phone_number')
         password = request.data.get('password')
+        confirm_password = request.data.get('confirmPassword')  # Add confirmPassword
         otp = request.data.get('otp')
 
+        # Validate required fields
+        if not email or not username or not password or not confirm_password:
+            return Response({"message": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if passwords match
+        if password != confirm_password:
+            return Response({"message": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if email already exists
         if CustomUser.objects.filter(email=email).exists():
             return Response({"message": "Email already exists. Please login."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # OTP verification logic
         stored_otp = cache.get(f'otp_{email}')
         if stored_otp:
             if otp and otp == stored_otp:
-                user = CustomUser.objects.create_user(username=username, email=email, phone_number=phone_number, password=password)
-                RegistrationLog.objects.create(user=user, username=username, email=email, phone_number=phone_number, password=password, registered_at=now())
+                # Create user without phone_number (since it's not in the frontend form)
+                user = CustomUser.objects.create_user(username=username, email=email, password=password)
+                RegistrationLog.objects.create(
+                    user=user,
+                    username=username,
+                    email=email,
+                    password=password,
+                    registered_at=now()
+                )
                 cache.delete(f'otp_{email}')  # Remove OTP after successful registration
                 return Response({"message": "Registration successful. Please login."}, status=status.HTTP_201_CREATED)
-            return Response({"message": "Invalid OTP. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"message": "Invalid OTP. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate OTP and store it
+        # Generate and send OTP if not already sent
         generated_otp = str(random.randint(100000, 999999))
         cache.set(f'otp_{email}', generated_otp, timeout=300)  # Store OTP for 5 minutes
 

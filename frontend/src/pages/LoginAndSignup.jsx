@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/LoginAndSignup.css';
+
+const API_URL = 'http://127.0.0.1:8000'; // Replace with your Django backend URL
 
 const LoginAndSignup = () => {
     const [isLogin, setIsLogin] = useState(true);
-    const [formData,setFormData] = useState({
-                 
-           username:"",
-           email:"",
-           password:"",
+    const [showOtpField, setShowOtpField] = useState(false);
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        otp: "",
     });
 
     const toggleForm = () => {
@@ -20,16 +25,14 @@ const LoginAndSignup = () => {
         }, 200);
     }, []);
 
-    //Handle input changes
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-     // Handle form submit for login/signup
-     const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const endpoint = isLogin ? "/login/" : "/register/";
-
+        const endpoint = isLogin ? "/login/login/" : "/login/register/";
+    
         try {
             const response = await axios.post(API_URL + endpoint, formData);
             if (isLogin) {
@@ -37,14 +40,18 @@ const LoginAndSignup = () => {
                 alert("Login successful!");
                 window.location.href = "/dashboard"; // Redirect after login
             } else {
-                alert("Signup successful! You can now log in.");
-                setIsLogin(true);
+                if (response.data.message === "OTP sent to email. Please verify.") {
+                    setShowOtpField(true); // Show OTP field
+                    alert("OTP sent to your email. Please verify.");
+                } else {
+                    alert("Signup successful! You can now log in.");
+                    setIsLogin(true);
+                }
             }
         } catch (error) {
-            alert(error.response?.data?.error || "Something went wrong");
+            alert(error.response?.data?.message || "Something went wrong");
         }
     };
-
 
     return (
         <div id="container" className={isLogin ? 'container sign-in' : 'container sign-up'}>
@@ -54,21 +61,25 @@ const LoginAndSignup = () => {
                         <div className="form sign-up">
                             <div className="input-group">
                                 <i className='bx bxs-user'></i>
-                                <input type="text" placeholder="Username" />
+                                <input type="text" name="username" placeholder="Username" onChange={handleChange} />
                             </div>
                             <div className="input-group">
                                 <i className='bx bx-mail-send'></i>
-                                <input type="email" placeholder="Email" />
+                                <input type="email" name="email" placeholder="Email" onChange={handleChange} />
                             </div>
                             <div className="input-group">
                                 <i className='bx bxs-lock-alt'></i>
-                                <input type="password" placeholder="Password" />
+                                <input type="password" name="password" placeholder="Password" onChange={handleChange} />
                             </div>
                             <div className="input-group">
                                 <i className='bx bxs-lock-alt'></i>
-                                <input type="password" placeholder="Confirm password" />
+                                <input type="password" name="confirmPassword" placeholder="Confirm password" onChange={handleChange} />
                             </div>
-                            <button>
+                            <div className="input-group">
+                                <i className='bx bxs-lock-alt'></i>
+                                <input type="text" name="otp" placeholder="OTP" onChange={handleChange} />
+                            </div>
+                            <button onClick={handleSubmit}>
                                 Sign up
                             </button>
                             <p>
@@ -87,13 +98,13 @@ const LoginAndSignup = () => {
                         <div className="form sign-in">
                             <div className="input-group">
                                 <i className='bx bxs-user'></i>
-                                <input type="text" placeholder="Username" />
+                                <input type="text" name="username" placeholder="Username" onChange={handleChange} />
                             </div>
                             <div className="input-group">
                                 <i className='bx bxs-lock-alt'></i>
-                                <input type="password" placeholder="Password" />
+                                <input type="password" name="password" placeholder="Password" onChange={handleChange} />
                             </div>
-                            <button>
+                            <button onClick={handleSubmit}>
                                 Sign in
                             </button>
                             <p>
