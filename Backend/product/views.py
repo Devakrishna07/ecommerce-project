@@ -8,21 +8,23 @@ from .serializers import ProductSerializer
 @api_view(['GET'])
 def top_four_product_images(request):
     """
-    Get the first image of the top 4 products where product_count > 1.
+    Get the first image, name, description, and price of the top 4 products where product_count > 1.
     """
     products = Product.objects.filter(product_count__gt=1).order_by('-id')[:4]
     serialized_products = ProductSerializer(products, many=True).data
 
-    # Extract only the first image from product_images
-    product_images = [
+    # Extract product details including the first image, name, description, and price
+    product_data = [
         {
             "product_name": product["product_name"],
-            "first_image": product["product_images"][0] if product["product_images"] else None
+            "first_image": product["product_images"][0] if product["product_images"] else None,
+            "description": product["product_description"],  # Include product description
+            "price": product["product_price"],  # Include product price
         }
         for product in serialized_products
     ]
 
-    return Response(product_images)
+    return Response(product_data)
 
 @api_view(['GET'])
 def search_or_latest_products(request):

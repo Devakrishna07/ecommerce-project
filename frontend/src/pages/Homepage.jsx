@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -9,12 +10,30 @@ import RelatedProducts from "./RelatedProduct";
 import BannerImg1 from "../assets/images/Banner_img1.png";
 import BannerImg2 from "../assets/images/Banner_img2.png";
 import BannerImg3 from "../assets/images/Banner_img3.png";
-
+import axios from "axios";
 // Sample dress banner images (replace with actual image URLs)
 
 const banners = [BannerImg1, BannerImg2, BannerImg3];
 
 export default function HomePage() {
+
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    // Fetch data from Django backend
+    axios
+      .get("http://127.0.0.1:8000/Product/top/") // Change URL if needed
+      .then((response) => {
+        setProducts(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`); // Navigate to product details page
+};
+        
   return (
     <div className="homepage-container">
       {/* Banner Carousel */}
@@ -42,21 +61,27 @@ export default function HomePage() {
           <div key={category} className="category-item">{category}</div>
         ))}
       </div>
-
-      {/* Featured Products */}
+      {/* featured products */}
       <div className="featured-products">
-        <h2 className="section-title">Featured Products</h2>
-        <div className="product-grid">
-          {[1, 2, 3, 4].map((product) => (
-            <div key={product} className="product-item">
-              <div className="product-image">Image</div>
-              <h3 className="product-name">Product {product}</h3>
-              <p className="product-price">$49.99</p>
-              <button className="buy-button">Buy Now</button>
+      <h2 className="section-title">Featured Products</h2>
+      <div className="product-grid">
+        {products.length > 0 ? (
+          products.map((product, index) => (
+            <div key={index} className="product-item">
+              <div className="product-image">
+                <img src={product.first_image} alt={product.product_name} />
+              </div>
+              <h3 className="product-name">{product.product_name}</h3>
+              <p className="product-description">{product.description}</p>
+              <p className="product-price">${product.price}</p>
+              <button className="buy-button" onClick={() => handleProductClick(product.id)}>Buy Now</button>
             </div>
-          ))}
-        </div>
+          ))
+        ) : (
+          <p>Loading products...</p>
+        )}
       </div>
+    </div>
 
       {/* Call to Action */}
       <div className="cta">Limited Offer! Get 20% off on your first order!</div>
